@@ -3,22 +3,15 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 class Square extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: null
-        };
-    }
-
     render() {
       return (
         <button 
             className="square" 
             onClick={() => {
-                this.setState({value: 'X'});
-                console.log("Button #" + this.state.value +" clicked!");
+                this.props.onClick();
+                console.log("Button #" + this.props.value +" clicked!");
         }}>
-          {this.state.value}
+          {this.props.value}
         </button>
       );
     }
@@ -27,8 +20,26 @@ class Square extends React.Component {
   }
   
   class Board extends React.Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        squares: Array(9).fill(null) // To create array inside of a state
+      }
+    }
+
+    handleClick(i) {
+      const squares = this.state.squares.slice(); // Makes copy of the array
+      squares[i] = 'X';
+      this.setState({squares: squares});
+    }
+
     renderSquare(i) {
-      return <Square value={i}/>;
+      return (
+        <Square // Uses state as props inside of daughter components and passes onClick
+          value={this.state.squares[i]}
+          onClick={() => this.handleClick(i)} // Reacts asks to provide "on" for event name
+        />                                    // and "handle" for method name
+      );
     }
   
     render() {
