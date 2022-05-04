@@ -48,7 +48,12 @@ class Board extends React.Component {
      status = 'Player ' + winner + ' is a winner!';
    }
    else { // Null  was received 
-     status = 'Next turn: ' + (this.state.xIsNext ? 'X' : 'O');
+    if (this.state.squares.every(function(i) {return i != null})) { // If all squares are filled, but winner is null - it's a tie
+      status = `Sorry, it's a tie!`;
+    }
+    else {
+      status = 'Next turn: ' + (this.state.xIsNext ? 'X' : 'O');
+    }
    }
 
    return (
