@@ -17,13 +17,20 @@ class Board extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares: Array(9).fill(null) // To create array inside of a state
+      squares: Array(9).fill(null), // To create array inside of a state
+      xIsNext: true
     }
   }
   handleClick(i) {
-    const squares = this.state.squares.slice(); // Makes copy of the array
-    squares[i] = 'X';                           // Immutability is important!
-    this.setState({squares: squares});
+    const squares = this.state.squares.slice(); // Makes copy of the array, immutability is important!
+    if (calculateWinner(squares) || squares[i]) {
+      return; // Doesn't allow to change if winner was selected or square isn't null 
+    }
+    squares[i] = this.state.xIsNext ? 'X' : 'O'; // Changes state each click
+    this.setState({
+      squares: squares,
+      xIsNext: !this.state.xIsNext
+    });
   }
   renderSquare(i) {
     return (
@@ -35,7 +42,14 @@ class Board extends React.Component {
   }
 
  render() {
-   const status = 'Next player: X';
+   const winner = calculateWinner(this.state.squares); 
+   let status;
+   if (winner) { // If winner was received
+     status = 'Player ' + winner + ' is a winner!';
+   }
+   else { // Null  was received 
+     status = 'Next turn: ' + (this.state.xIsNext ? 'X' : 'O');
+   }
 
    return (
      <div>
@@ -76,7 +90,27 @@ class Game extends React.Component {
   }
 }
   
-  // ========================================
+// Helper functions
+function calculateWinner(squares) {
+  const lines = [ // Successful lines
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+  for (let i = 0; i < lines.length; i++) { // Goes through array of lines
+    const [a, b, c] = lines[i]; 
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) { // If successful lines filled only with 'X' or 'O' 
+      return squares[a]; // Returns winner name
+    }  
+  }
+  
+}
+// ========================================
   
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<Game />);
