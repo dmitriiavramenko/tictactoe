@@ -14,51 +14,18 @@ function Square(props) {
 }
   
 class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null), // To create array inside of a state
-      xIsNext: true
-    }
-  }
-  handleClick(i) {
-    const squares = this.state.squares.slice(); // Makes copy of the array, immutability is important!
-    if (calculateWinner(squares) || squares[i]) {
-      return; // Doesn't allow to change if winner was selected or square isn't null 
-    }
-    squares[i] = this.state.xIsNext ? 'X' : 'O'; // Changes state each click
-    this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext
-    });
-  }
   renderSquare(i) {
     return (
       <Square // Uses state as props inside of daughter components and passes onClick
-        value={this.state.squares[i]}
-        onClick={() => this.handleClick(i)} // Reacts asks to provide "on" for event name
-      />                                    // and "handle" for method name
+        value={this.props.squares[i]}
+        onClick={() => this.props.onClick(i)} //  Binds square props.onClick with board props.onClick received from Game
+      />                                    
     );
   }
 
  render() {
-   const winner = calculateWinner(this.state.squares); 
-   let status;
-   if (winner) { // If winner was received
-     status = 'Player ' + winner + ' is a winner!';
-   }
-   else { // Null  was received 
-    if (this.state.squares.every(function(i) {return i != null})) { // If all squares are filled, but winner is null - it's a tie
-      status = `Sorry, it's a tie!`;
-    }
-    else {
-      status = 'Next turn: ' + (this.state.xIsNext ? 'X' : 'O');
-    }
-   }
-
    return (
      <div>
-       <div className="status">{status}</div>
        <div className="board-row">
          {this.renderSquare(0)}
          {this.renderSquare(1)}
@@ -80,19 +47,64 @@ class Board extends React.Component {
 }
  
 class Game extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      history: [{ // History to change a move
+        squares: Array(9).fill(null) // To create array inside of a state
+      }],
+      xIsNextTrue: true
+    }
+  }
+
+  handleClick(i) {
+    const history = this.state.history;
+    const current = history[history.length - 1];
+    const squares = current.squares.slice(); // Makes copy of the array, immutability is important!
+    if (calculateWinner(squares) || squares[i]) {
+      return; // Doesn't allow to change if winner was selected or square isn't null 
+    }
+    squares[i] = this.state.xIsNext ? 'X' : 'O'; // Changes state each click
+    this.setState({
+      history: history.concat([{ // concat() instead of push() for immutability (push changes an array itself), concat just adds
+        squares: squares
+      }]),
+      xIsNext: !this.state.xIsNext
+    });
+  }
+
   render() {
+    const history = this.state.history; // Immutability is still important
+    const current = history[history.length - 1];
+    const winner = calculateWinner(current.squares); 
+    let status;
+    if (winner) { // If winner was received
+      status = 'Player ' + winner + ' is a winner!';
+    }
+    else { // Null  was received 
+      if (current.squares.every(function(i) {return i != null})) { // If all squares are filled, but winner is null - it's a tie
+        status = `Sorry, it's a tie!`;
+      }
+      else {
+        status = 'Next turn: ' + (this.state.xIsNext ? 'X' : 'O');
+      }
+    }
+
     return (
       <div className="game">
         <div className="game-board">
-          <Board />
-        </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
+          <Board 
+            squares={current.squares}
+            onClick={(i) => this.handleClick(i)} // Reacts asks to provide "on" for event name and "handle" for method name
+          />                                    
+        </div> 
+        <div className="game-info"> 
+          <div>{status}</div>
           <ol>{/* TODO */}</ol>
         </div>
       </div>
     );
-  }
+  }    
 }
   
 // Helper functions
