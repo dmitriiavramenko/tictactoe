@@ -50,10 +50,10 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      history: [{ // History to change a move
+      history: [{ // History to change a move (Time travel)
         squares: Array(9).fill(null) // To create array inside of a state
       }],
-      xIsNextTrue: true
+      xIsNext: true
     }
   }
 
