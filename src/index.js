@@ -16,7 +16,7 @@ function Square(props) {
 class Board extends React.Component {
   renderSquare(i) {
     return (
-      <Square // Uses state as props inside of daughter components and passes onClick
+      <Square // Uses state as props inside of child components and passes onClick
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)} //  Binds square props.onClick with board props.onClick received from Game
       />                                    
@@ -53,12 +53,19 @@ class Game extends React.Component {
       history: [{ // History to change a move (Time travel)
         squares: Array(9).fill(null) // To create array inside of a state
       }],
-      xIsNext: true
+      xIsNext: true,
+      stepNumber: 0
     }
+  }
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0 // If step % 2 isn't equal to 0, it mean it's odd number, odd numbers are circles
+    });
   }
 
   handleClick(i) {
-    const history = this.state.history;
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice(); // Makes copy of the array, immutability is important!
     if (calculateWinner(squares) || squares[i]) {
@@ -69,14 +76,25 @@ class Game extends React.Component {
       history: history.concat([{ // concat() instead of push() for immutability (push changes an array itself), concat just adds
         squares: squares
       }]),
+      stepNumber: history.length,
       xIsNext: !this.state.xIsNext
     });
   }
 
   render() {
     const history = this.state.history; // Immutability is still important
-    const current = history[history.length - 1];
+    const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares); 
+
+    const moves = history.map((step, move) => { // Go through whole history creating a button for new state
+      const desc = move ? 'Go back to the move  #' + move : 'Go back to the beginning';
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    });
+
     let status;
     if (winner) { // If winner was received
       status = 'Player ' + winner + ' is a winner!';
@@ -100,7 +118,7 @@ class Game extends React.Component {
         </div> 
         <div className="game-info"> 
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
